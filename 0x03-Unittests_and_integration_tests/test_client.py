@@ -37,10 +37,10 @@ class TestGithubOrgClient(unittest.TestCase):
         # Patch 'org' property using PropertyMock
         with patch.object(
             GithubOrgClient, "org", new_callable=PropertyMock) as mock_org:
-            mock_org.return_value = mock_payload
-            result = client._public_repos_url
-            self.assertEqual(result, 
-                              "https://api.github.com/orgs/testorg/repos")
+                mock_org.return_value = mock_payload
+                result = client._public_repos_url
+                self.assertEqual(result, 
+                                  "https://api.github.com/orgs/testorg/repos")
 
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json):
@@ -49,9 +49,10 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient("testorg")
 
         # Patch _public_repos_url property using PropertyMock
-        *with patch.object(GithubOrgClient, "_public_repos_url", new_callable=PropertyMock) as mock_repos_url:
-            mock_repos_url.return_value = "fake_url"
-            repos = client.public_repos()
+        *with patch.object(
+            GithubOrgClient, "_public_repos_url", new_callable=PropertyMock) as mock_repos_url:
+                mock_repos_url.return_value = "fake_url"
+                repos = client.public_repos()
 
             # Assert the list of repo names matches expected
             self.assertEqual(
