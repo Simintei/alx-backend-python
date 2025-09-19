@@ -85,7 +85,7 @@ def get_json(url: str) -> Dict:
     response = requests.get(url)
     return response.json()
 
-class TestGetJson(unittest.TextCase):
+class TestGetJson(unittest.TestCase):
 #unit tests for utils.get_json
     @parameterized.expand([
         ("http://example.com",{"payload": True})
