@@ -37,6 +37,10 @@ class TestGithubOrgClient(unittest.TestCase):
         # check the return value matches mocked payload
         self.assertEqual(result, expected_payload)
 
+
+class TestGithubOrgClient(unittest.TestCase):
+
+    
     def test_public_repos_url(self):
         """Unit-test GithubOrgClient._public_repos_url."""
         client = GithubOrgClient("testorg")
@@ -51,7 +55,9 @@ class TestGithubOrgClient(unittest.TestCase):
                 result, "https://api.github.com/orgs/testorg/repos"
         )
 
-
+class TestGithubOrgClient(unittest.TestCase):
+    
+    
     @patch('client.get_json')
     def test_public_repos(self, mock_get_json):
         """Test GithubOrgClient.public_repos returns expected repo list"""
