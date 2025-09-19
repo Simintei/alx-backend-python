@@ -42,22 +42,23 @@ def access_nested_map(nested_map: Mapping, path: Sequence) -> Any:
     return nested_map
   
 class TestAccessNestedMap(unittest.TestCase):
-   #test suite without a decorator
-  def test_access_nested_map(self) :
-    #test that correct values are returned
-      nested_map = {"a": 1}
-      self.assertEqual(access_nested_map(nested_map, ["a]), 1)
-      
-  @parameterized.expand([
-       ({"a": 1}, ["a"], 1),
-       ({"a": {"b": 2}}, ["a"], {"b": 2}),
-       ({"a": {"b": 2}}, ["a", "b"], 2), 
-  ])
-  def test_access_nested_map(self, nested_map, path, expected) :
-    #test that correct values are returned
-      result = access_nested_map(nested_map, path)
-      self.assertEqual(access_nested_map(nested_path), expected) 
-      
-if __name__ == __"main"__:
-    unitest.main()
+    """
+    Test suite for the access_nested_map function.
+    """
+    
+    @parameterized.expand([
+        ({"a": 1}, ["a"], 1),
+        ({"a": {"b": 2}}, ["a"], {"b": 2}),
+        ({"a": {"b": 2}}, ["a", "b"], 2),
+    ])
+    def test_access_nested_map(self, nested_map, path, expected):
+        """
+        Test that the function returns the expected value for a simple path
+        and with multiple paths.
+        """
+        result = access_nested_map(nested_map, path)
+        self.assertEqual(result, expected)
+
+if __name__ == "__main__":
+    unittest.main()
   
