@@ -38,20 +38,20 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected_payload)
 
         
-        def test_public_repos_url(self):
-        """Unit-test GithubOrgClient._public_repos_url."""
-        mock_payload = {"repos_url": "https://api.github.com/orgs/testorg/repos"}
+def test_public_repos_url(self):
+    """Unit-test GithubOrgClient._public_repos_url."""
+    client = GithubOrgClient("testorg")
+    mock_payload = {"repos_url": "https://api.github.com/orgs/testorg/repos"}
 
-        with patch(
-            'client.GithubOrgClient.org',
-            new_callable=PropertyMock,
-            return_value=mock_payload
-        ) as mock_org:
-            client = GithubOrgClient("testorg")
-            result = client._public_repos_url
-
-            self.assertEqual(result, mock_payload["repos_url"])
-            mock_org.assert_called_once()
+    # Patch 'org' using a context manager
+    with patch.object(
+        GithubOrgClient, "org", new_callable=property
+    ) as mock_org:
+        mock_org.return_value = mock_payload
+        result = client._public_repos_url
+        self.assertEqual(
+            result, "https://api.github.com/orgs/testorg/repos"
+        )
 
 
 if __name__ == "__main__":
