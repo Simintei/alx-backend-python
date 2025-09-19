@@ -2,6 +2,7 @@
 """Generic utilities for github org client.
 """
 import unitest
+import requests
 from utils import acces_nested_map
 from parameterized import parameterized
 from functools import wraps
