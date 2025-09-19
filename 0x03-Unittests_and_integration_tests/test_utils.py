@@ -3,6 +3,8 @@
 """
 import unittest
 import requests
+from unittest.mock import patch
+from utils import get_json
 from utils import access_nested_map
 from parameterized import parameterized
 from functools import wraps
@@ -75,4 +77,34 @@ class TestAccessNestedMap(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-  
+
+
+def get_json(url: str) -> Dict:
+    """Get JSON from remote URL.
+    """
+    response = requests.get(url)
+    return response.json()
+
+class TestGetJson(unittest.TextCase):
+#unit tests for utils.get_json
+    @parameterized.expand([
+        ("http://example.com",{"payload": True})
+        ("http://holberton.io",{"payload": False})
+    ])
+    @patch('utils.get_json')
+    def test_get_json(self, test_url, test_payload, mock_get):
+#test that get_json returns the expected payload and that requests.get is called exactly once  with the url
+          
+        mock_get.return_value.json.return_value = test_payload
+        
+        self.assertEqual(get_json(test_url), test_payload)
+        mock_get.assert_called_once_with(test_url)
+
+
+
+
+
+if __name__ == "__main__":
+    unittest.main()    
+
+        
