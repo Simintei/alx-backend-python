@@ -5,7 +5,7 @@ access_nested_map is a helper function used to retrieve values from nested dicti
 nested_map = {"a": {"b": {"c": 1}}}
 path = ("a", "b", "c")
 
-# This should return 1
+->This should return 1
 
 utils.access_nested_map is a small utility function that retrieves values from a deeply nested dictionary using a tuple of keys. It’s typically implemented using a simple loop and raises KeyError on invalid paths. Unit testing involves checking both correct outputs and error handling.
 
