@@ -3,7 +3,7 @@
 """
 import unittest
 import requests
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from utils import get_json
 from utils import access_nested_map
 from parameterized import parameterized
