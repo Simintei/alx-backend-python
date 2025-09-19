@@ -3,7 +3,7 @@
 """
 import unittest
 import requests
-from utils import acces_nested_map
+from utils import access_nested_map
 from parameterized import parameterized
 from functools import wraps
 from typing import (
@@ -58,6 +58,20 @@ class TestAccessNestedMap(unittest.TestCase):
         """
         result = access_nested_map(nested_map, path)
         self.assertEqual(result, expected)
+
+    @parameterized.expand([
+        ({}, ["a"]),
+        ({"a": 1}, ["a", "b"]),
+    ])
+    def test_access_nested_map_exception(self, nested_map, path):
+        """
+        Test that a KeyError is raised for invalid paths,
+        and that the exception message matches the missing key.
+        """
+        with self.assertRaises(KeyError) as cm:
+            access_nested_map(nested_map, path)
+        # KeyError message should be the missing key (the last attempted key)
+        self.assertEqual(str(cm.exception), repr(path[-1]))
 
 if __name__ == "__main__":
     unittest.main()
