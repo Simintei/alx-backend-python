@@ -115,7 +115,7 @@ class TestMemoize(unittest.TestCase):
             
             @memoize
             def a_property(self):
-                return self_a_method()
+                return self.a_method()
 
         obj = TestClass()    
 #patch a method to trace calls
