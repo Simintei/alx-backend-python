@@ -88,8 +88,8 @@ def get_json(url: str) -> Dict:
 class TestGetJson(unittest.TestCase):
 #unit tests for utils.get_json
     @parameterized.expand([
-        ("http://example.com",{"payload": True})
-        ("http://holberton.io",{"payload": False})
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
     ])
     @patch('utils.get_json')
     def test_get_json(self, test_url, test_payload, mock_get):
