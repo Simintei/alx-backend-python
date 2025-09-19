@@ -119,14 +119,14 @@ class TestMemoize(unittest.TestCase):
 
         obj = TestClass()    
 #patch a method to trace calls
-        with patch.object(TestCalls, 'a_method', return_value=42) as mock_method:
-            #call a a property twice
+        with patch.object(TestClass, 'a_method', return_value=42) as mock_method:
+            #call a_property twice
             result1 = obj.a_property()
             result2 = obj.a_property()
             
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)  
-
+            #method should be called once (memoized)
             mock_method.assert_called_once()
             
 if __name__ == "__main__":
