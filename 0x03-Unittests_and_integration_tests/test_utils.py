@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Generic utilities for github org client.
 """
-import requests
 import unitest
 from utils import acces_nested_map
 from parameterized import parameterized
