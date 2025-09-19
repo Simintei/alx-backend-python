@@ -43,19 +43,19 @@ class TestGithubOrgClient(unittest.TestCase):
         )
 
     @patch("client.get_json")
-def test_public_repos(self, mock_get_json):
-    """Unit-test GithubOrgClient.public_repos."""
-    payload = [{"name": "repo1"}, {"name": "repo2"}]
-    mock_get_json.return_value = payload
-    client = GithubOrgClient("testorg")
+    def test_public_repos(self, mock_get_json):
+        """Unit-test GithubOrgClient.public_repos."""
+        payload = [{"name": "repo1"}, {"name": "repo2"}]
+        mock_get_json.return_value = payload
+        client = GithubOrgClient("testorg")
 
     # Patch '_public_repos_url' property with return value
-    with patch.object(
-        GithubOrgClient, "_public_repos_url", new_callable=property, return_value="fake_url"
-    ):
-        result = client.public_repos
-        self.assertEqual(result, ["repo1", "repo2"])
-        mock_get_json.assert_called_once()
+        with patch.object(
+            GithubOrgClient, "_public_repos_url", new_callable=property, return_value="fake_url"
+        ):
+            result = client.public_repos
+            self.assertEqual(result, ["repo1", "repo2"])
+            mock_get_json.assert_called_once()
 
 if __name__ == "__main__":
     unittest.main()
