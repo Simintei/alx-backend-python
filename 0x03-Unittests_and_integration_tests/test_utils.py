@@ -4,8 +4,8 @@
 import unittest
 import requests
 from unittest.mock import patch
-from .utils import get_json
-from .utils import access_nested_map
+from utils import get_json
+from utils import access_nested_map
 from parameterized import parameterized
 from functools import wraps
 from typing import (
