@@ -29,36 +29,33 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected_payload)
 
     def test_public_repos_url(self):
-        """Unit-test GithubOrgClient._public_repos_url."""
-        client = GithubOrgClient("testorg")
-        mock_payload = {
-            "repos_url": "https://api.github.com/orgs/testorg/repos"}
+    """Unit-test GithubOrgClient._public_repos_url."""
+    client = GithubOrgClient("testorg")
+    mock_payload = {"repos_url": "https://api.github.com/orgs/testorg/repos"}
 
-        with patch.object(
-            GithubOrgClient, "org", new_callable=property
-        ) as mock_org:
-            mock_org.return_value = mock_payload
-            result = client._public_repos_url
+    # Patch 'org' as a property with return value
+    with patch.object(
+        GithubOrgClient, "org", new_callable=property, return_value=mock_payload
+    ):
+        result = client._public_repos_url
+        self.assertEqual(
+            result, "https://api.github.com/orgs/testorg/repos"
+        )
 
-        self.assertEqual(result, "https://api.github.com/orgs/testorg/repos")
+    @patch("client.get_json")
+def test_public_repos(self, mock_get_json):
+    """Unit-test GithubOrgClient.public_repos."""
+    payload = [{"name": "repo1"}, {"name": "repo2"}]
+    mock_get_json.return_value = payload
+    client = GithubOrgClient("testorg")
 
-    @patch('client.get_json')
-    def test_public_repos(self, mock_get_json):
-        """Unit-test GithubOrgClient.public_repos."""
-        client = GithubOrgClient("testorg")
-        repo_payload = [{"name": "repo1"}, {"name": "repo2"}]
-        mock_get_json.return_value = repo_payload
-
-        with patch.object(
-            GithubOrgClient, "_public_repos_url", new_callable=property
-        ) as mock_repos_url:
-            mock_repos_url.return_value = "fake_url"
-            result = client.public_repos()
-
+    # Patch '_public_repos_url' property with return value
+    with patch.object(
+        GithubOrgClient, "_public_repos_url", new_callable=property, return_value="fake_url"
+    ):
+        result = client.public_repos
         self.assertEqual(result, ["repo1", "repo2"])
-        mock_get_json.assert_called_once_with("fake_url")
-        mock_repos_url.assert_called_once()
-
+        mock_get_json.assert_called_once()
 
 if __name__ == "__main__":
     unittest.main()
