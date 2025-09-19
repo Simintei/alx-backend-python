@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Unit tests for client.GithubOrgClient"""
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
 
 from client import GithubOrgClient  # the class we’re testing
