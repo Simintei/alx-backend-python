@@ -110,11 +110,11 @@ class TestMemoize(unittest.TestCase):
     def test_memoize(self):
 #test that memoize cached the result of a method
         class TestClass:
-            def a_method(self)
+            def a_method(self):
                 return 42
             
             @memoize
-            def a_property(self)
+            def a_property(self):
                 return self_a_method()
 
         obj = TestClass()    
