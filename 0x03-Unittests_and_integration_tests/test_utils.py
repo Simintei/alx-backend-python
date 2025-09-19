@@ -94,7 +94,8 @@ class TestGetJson(unittest.TestCase):
     ])
     @patch('utils.requests.get')
     def test_get_json(self, test_url, test_payload, mock_get):
-#test that get_json returns the expected payload and that requests.get is called exactly once  with the url
+     #test that get_json returns the expected payload and 
+     #that requests.get is called exactly once  with the url
         mock_response = Mock()
         mock_response.json.return_value = test_payload          
         mock_get.return_value = mock_response
@@ -106,10 +107,14 @@ class TestGetJson(unittest.TestCase):
         self.assertEqual(result, test_payload)
         
 class TestMemoize(unittest.TestCase):
+
     
     def test_memoize(self):
 #test that memoize cached the result of a method
+        
         class TestClass:
+
+            
             def a_method(self):
                 return 42
             
@@ -118,7 +123,7 @@ class TestMemoize(unittest.TestCase):
                 return self.a_method()
 
         obj = TestClass()    
-#patch a method to trace calls
+       
         with patch.object(TestClass, 'a_method', return_value=42) as mock_method:
             #call a_property twice
             result1 = obj.a_property
