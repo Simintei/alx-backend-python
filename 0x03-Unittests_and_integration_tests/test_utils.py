@@ -121,8 +121,8 @@ class TestMemoize(unittest.TestCase):
 #patch a method to trace calls
         with patch.object(TestClass, 'a_method', return_value=42) as mock_method:
             #call a_property twice
-            result1 = obj.a_property()
-            result2 = obj.a_property()
+            result1 = obj.a_property
+            result2 = obj.a_property
             
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)  
