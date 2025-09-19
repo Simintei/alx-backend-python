@@ -31,9 +31,12 @@ class TestGithubOrgClient(unittest.TestCase):
     def test_public_repos_url(self):
         """Unit-test GithubOrgClient._public_repos_url."""
         client = GithubOrgClient("testorg")
-        mock_payload = {"repos_url": "https://api.github.com/orgs/testorg/repos"}
+        mock_payload = {
+            "repos_url": "https://api.github.com/orgs/testorg/repos"}
 
-        with patch.object(GithubOrgClient, "org", new_callable=property) as mock_org:
+        with patch.object(
+            GithubOrgClient, "org", new_callable=property
+        ) as mock_org:
             mock_org.return_value = mock_payload
             result = client._public_repos_url
 
