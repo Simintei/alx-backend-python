@@ -46,11 +46,10 @@ class TestGithubOrgClient(unittest.TestCase):
         with patch.object(
                 GithubOrgClient, "org", new_callable=property
         ) as mock_org:
-            mock_org.return_value = mock_payload
             result = client._public_repos_url
             self.assertEqual(
                 result, "https://api.github.com/orgs/testorg/repos"
-            )
+        )
 
 
 if __name__ == "__main__":
