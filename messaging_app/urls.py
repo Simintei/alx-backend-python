@@ -19,7 +19,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('chats.urls')),  # <-- include your app URLs
+    path('api/', include('chats.urls')),  # <-- this mounts the router under /api/
 ]
+
 
 
