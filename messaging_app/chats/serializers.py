@@ -7,10 +7,22 @@ class UserSerializer(serializers.ModelSerializer):
     Serializer for User model.
     Includes basic information but excludes password hash by default.
     """
+    password = serializers.CharField(write_only=True)  # explicit CharField
+
     class Meta:
         model = User
-        # We don’t expose password in API responses
-        exclude = ['password', 'groups', 'user_permissions']
+        exclude = ['groups', 'user_permissions']
+
+    def create(self, validated_data):
+        """
+        Override create to hash password correctly.
+        """
+        password = validated_data.pop('password', None)
+        user = User(**validated_data)
+        if password:
+            user.set_password(password)
+        user.save()
+        return user
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -19,6 +31,7 @@ class MessageSerializer(serializers.ModelSerializer):
     Shows sender info nested using UserSerializer.
     """
     sender = UserSerializer(read_only=True)
+    message_body = serializers.CharField()  # explicit CharField
 
     class Meta:
         model = Message
@@ -30,6 +43,14 @@ class MessageSerializer(serializers.ModelSerializer):
             'conversation'
         ]
         read_only_fields = ['message_id', 'sent_at']
+
+    def validate_message_body(self, value):
+        """
+        Ensure message body is not empty or just whitespace.
+        """
+        if not value.strip():
+            raise serializers.ValidationError("Message body cannot be empty.")
+        return value
 
 
 class ConversationSerializer(serializers.ModelSerializer):
