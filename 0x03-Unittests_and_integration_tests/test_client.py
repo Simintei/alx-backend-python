@@ -2,7 +2,7 @@
 """Unit tests for client.GithubOrgClient"""
 import unittest
 from unittest.mock import patch, PropertyMock
-from parameterized import parameterized
+from parameterized import parameterized, parametized class
 from client import GithubOrgClient  # the class we're testing
 import fixtures
 
