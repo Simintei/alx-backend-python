@@ -64,13 +64,10 @@ class TestGithubOrgClient(unittest.TestCase):
                 mock_repos_url.assert_called_once()
                 mock_get_json.assert_called_once()
 
-
-class TestGithubOrgClient(unittest.TestCase):
-    """Tests for GithubOrgClient."""
-
+    
     @parameterized.expand([
         ({"license": {"key": "my_license"}}, "my_license", True),
-        ({"license": {"key": "other_license"}}, "my_license", False),
+        ({"license": {"key": "other_license"}}, "my_license", False)
     ])
     def test_has_license(self, repo, license_key, expected):
         """Test that has_license returns the correct boolean."""
