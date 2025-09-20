@@ -25,7 +25,7 @@ class User(AbstractUser):
 
     # Add phone number
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-
+    
     ROLE_CHOICES = [
         ("guest", "Guest"),
         ("host", "Host"),
@@ -34,6 +34,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="guest")
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Password hash (Django handles hashing)
+    password = models.CharField(max_length=128, blank=False)
 
     REQUIRED_FIELDS = ["email", "first_name", "last_name"]
 
