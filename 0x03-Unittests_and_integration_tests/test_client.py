@@ -61,8 +61,8 @@ class TestGithubOrgClient(unittest.TestCase):
                 )
 
             # Ensure mocks called once
-            mock_repos_url.assert_called_once()
-            mock_get_json.assert_called_once()
+                mock_repos_url.assert_called_once()
+                mock_get_json.assert_called_once()
 
 
 class TestGithubOrgClient(unittest.TestCase):
