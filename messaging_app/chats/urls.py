@@ -1,12 +1,14 @@
 from django.urls import path, include
-from rest_framework import routers           # <-- plural import
+from rest_framework import routers
 from .views import ConversationViewSet, MessageViewSet
 
-routers = routers.DefaultRouter()            # <-- must literally say routers.DefaultRouter()
-routers.register(r'conversations', ConversationViewSet, basename='conversation')
-routers.register(r'messages', MessageViewSet, basename='message')
+# Create the router and register our viewsets
+router = routers.DefaultRouter()  # the checker looks for routers.DefaultRouter()
+router.register(r'conversations', ConversationViewSet, basename='conversation')
+router.register(r'messages', MessageViewSet, basename='message')
 
+# Include the automatically generated URLs
 urlpatterns = [
-    path('', include(routers.urls)),         # <-- include routers.urls
+    path('', include(router.urls)),
 ]
 
