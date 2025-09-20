@@ -55,10 +55,10 @@ class TestGithubOrgClient(unittest.TestCase):
                 repos = client.public_repos()
 
             # Assert the list of repo names matches expected
-            self.assertEqual(
+                self.assertEqual(
                     [repo["name"] for repo in mock_get_json.return_value],
                     ["repo1", "repo2"]
-            )
+                )
 
             # Ensure mocks called once
             mock_repos_url.assert_called_once()
