@@ -56,8 +56,8 @@ class TestGithubOrgClient(unittest.TestCase):
 
             # Assert the list of repo names matches expected
             self.assertEqual(
-                [repo["name"] for repo in mock_get_json.return_value],
-                ["repo1", "repo2"]
+                    [repo["name"] for repo in mock_get_json.return_value],
+                    ["repo1", "repo2"]
             )
 
             # Ensure mocks called once
