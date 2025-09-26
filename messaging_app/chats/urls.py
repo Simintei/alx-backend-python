@@ -17,9 +17,9 @@ conversations_router.register(
 )
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('', include(conversations_router.urls)),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('messages/', UserMessagesView.as_view(), name='user-messages'),
+    path('messages/<int:pk>/', UserMessageDetailView.as_view(), name='user-message-detail'),
+    path('conversations/', UserConversationsView.as_view(), name='user-conversations'),
+    path('conversations/<int:pk>/', UserConversationDetailView.as_view(), name='user-conversation-detail'),
 ]
 
