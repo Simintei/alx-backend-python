@@ -1,11 +1,11 @@
-from rest_framework import viewsets, status, filters  # <-- filters added
+from rest_framework import viewsets, status, filters, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework import generics, permissions
-from.permissions import IsOwner
+from.permissions import IsOwner, IsParticipantOfConversation
 
 #conversation
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -92,3 +92,31 @@ class UserConversationDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Conversation.objects.all()
 
+class ConversationViewSet(viewsets.ModelViewSet):
+    queryset = Conversation.objects.all()
+    serializer_class = ConversationSerializer
+    permission_classes = [IsParticipantOfConversation]
+
+    def get_queryset(self):
+        # Only conversations where the user is a participant
+        return Conversation.objects.filter(participants=self.request.user)
+
+    def perform_create(self, serializer):
+        # When creating a conversation, automatically add the creator as participant
+        conversation = serializer.save()
+        conversation.participants.add(self.request.user)
+
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [IsParticipantOfConversation]
+
+    def get_queryset(self):
+        # Only messages in conversations where the user is a participant
+        return Message.objects.filter(
+            conversation__participants=self.request.user
+        )
+
+    def perform_create(self, serializer):
+        # Automatically set the sender to the logged-in user
+        serializer.save(sender=self.request.user)
