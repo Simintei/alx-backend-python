@@ -2,12 +2,12 @@ from rest_framework import viewsets, status, filters  # <-- filters added
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
-
+from rest_framework import generics, permissions
 from.permissions import IsOwner
 
+#conversation
 class ConversationViewSet(viewsets.ModelViewSet):
     """
     ViewSet for listing and creating Conversations.
@@ -33,6 +33,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+#messages
 class MessageViewSet(viewsets.ModelViewSet):
     """
     ViewSet for listing and sending messages.
@@ -54,9 +55,40 @@ class MessageViewSet(viewsets.ModelViewSet):
         conversation = get_object_or_404(Conversation, pk=conversation_id)
         serializer.save(sender=self.request.user, conversation=conversation)
 
-class UserMessagesDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+# Messages
+class UserMessagesView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
-    permission_classes = [IsOwner]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Message.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class UserMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
 
     def get_queryset(self):
         return Message.objects.all()
+
+# Conversations
+class UserConversationsView(generics.ListCreateAPIView):
+    serializer_class = ConversationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Conversation.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class UserConversationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ConversationSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
+
+    def get_queryset(self):
+        return Conversation.objects.all()
+
