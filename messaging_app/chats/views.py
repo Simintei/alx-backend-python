@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 
+from.permissions import IsOwner
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """
@@ -52,3 +53,10 @@ class MessageViewSet(viewsets.ModelViewSet):
         conversation_id = self.request.data.get("conversation")
         conversation = get_object_or_404(Conversation, pk=conversation_id)
         serializer.save(sender=self.request.user, conversation=conversation)
+
+class UserMessagesDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return Message.objects.all()
