@@ -129,14 +129,15 @@ class Message(models.Model):
 
     content = models.TextField(blank=False)
     
-    # Automatically set the timestamp when the message is created
-    timestamp = models.DateTimeField(default=timezone.now) 
+    # Field renamed from 'timestamp' to 'sent_at'
+    sent_at = models.DateTimeField(default=timezone.now) 
     
     # Optional: Track if the message has been read by the recipient(s)
     is_read = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['timestamp']
+        # Ordering changed to use 'sent_at'
+        ordering = ['sent_at']
         verbose_name = "Message"
         verbose_name_plural = "Messages"
 
