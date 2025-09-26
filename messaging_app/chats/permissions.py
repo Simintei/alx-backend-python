@@ -1,6 +1,6 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework import permissions, SAFE_METHODS
 
-class IsOwner(BasePermission):
+class IsOwner(permissions.BasePermission):
     """
     Allow only owners of an object to view or edit it.
     Assumes the model has a `user` field.
@@ -9,7 +9,7 @@ class IsOwner(BasePermission):
         return obj.user == request.user
 
 
-class IsParticipantOfConversation(BasePermission):
+class IsParticipantOfConversation(permissions.BasePermission):
     """
     Custom permission:
     - Only authenticated users can access
