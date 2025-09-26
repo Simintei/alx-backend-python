@@ -1,11 +1,9 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.utils.translation import gettext_lazy as _
+from django.utils import timezone # Added for timestamp defaults
 
-
-# ==========================
-# 1. Custom User Model
-# ==========================
 class User(AbstractUser):
     """
     Custom User model extending Django's AbstractUser.
@@ -40,6 +38,31 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ["email", "first_name", "last_name"]
 
+    # === FIXES FOR SystemCheckError (fields.E304) ===
+    # These explicit definitions with unique related_name arguments are necessary 
+    # to avoid reverse accessor clashes with the built-in auth.User model,
+    # resolving the SystemCheckError. 
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=_('groups'),
+        blank=True,
+        help_text=_(
+            'The groups this user belongs to. A user will get all permissions '
+            'granted to each of their groups.'
+        ),
+        related_name="chats_user_set",
+        related_query_name="chats_user",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=_('user permissions'),
+        blank=True,
+        help_text=_('Specific permissions for this user.'),
+        related_name="chats_permission_set",
+        related_query_name="chats_user",
+    )
+    # ===============================================
+
     class Meta:
         indexes = [
             models.Index(fields=["email"]),
@@ -48,48 +71,74 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.email})"
 
+# =========================================================================
+# NEW MODELS: Conversation and Message
+# =========================================================================
 
-# ==========================
-# 2. Conversation Model
-# ==========================
 class Conversation(models.Model):
     """
-    A Conversation model that tracks which users are in the conversation.
+    Represents a chat conversation between two or more users.
     """
-    conversation_id = models.UUIDField(
+    id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
+    
+    # Many-to-Many relationship with the custom User model
+    # related_name='conversations' allows retrieving all conversations for a user: user.conversations.all()
     participants = models.ManyToManyField(
-        User, related_name="conversations", blank=False
+        User,
+        related_name='conversations',
+        help_text="The users involved in this conversation"
     )
+
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        participants = ", ".join([str(user) for user in self.participants.all()])
-        return f"Conversation {self.conversation_id} between {participants}"
-
-
-# ==========================
-# 3. Message Model
-# ==========================
-class Message(models.Model):
-    """
-    Message model containing sender, conversation, and body.
-    """
-    message_id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
-    )
-    sender = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="sent_messages"
-    )
-    conversation = models.ForeignKey(
-        Conversation, on_delete=models.CASCADE, related_name="messages"
-    )
-    message_body = models.TextField()
-    sent_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["sent_at"]
+        ordering = ['-updated_at']
+        verbose_name = "Conversation"
+        verbose_name_plural = "Conversations"
 
     def __str__(self):
-        return f"Message {self.message_id} from {self.sender}"[:50]
+        # Display the emails of the participants for easy identification
+        return f"Conversation ({', '.join([str(p.email) for p in self.participants.all()])})"
+
+class Message(models.Model):
+    """
+    Represents a single message sent within a conversation.
+    """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
+
+    # Foreign Key to the Conversation this message belongs to
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        help_text="The conversation this message belongs to"
+    )
+
+    # Foreign Key to the User who sent the message
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='sent_messages',
+        help_text="The user who sent this message"
+    )
+
+    content = models.TextField(blank=False)
+    
+    # Automatically set the timestamp when the message is created
+    timestamp = models.DateTimeField(default=timezone.now) 
+    
+    # Optional: Track if the message has been read by the recipient(s)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+        verbose_name = "Message"
+        verbose_name_plural = "Messages"
+
+    def __str__(self):
+        return f"Message from {self.sender.email} in Conv {self.conversation.id}"
