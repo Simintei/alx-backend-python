@@ -1,16 +1,17 @@
+# messaging_app/urls.py
 from django.contrib import admin
 from django.urls import path, include
-from messaging_app.chats.auth import token_obtain_pair, token_refresh
+from rest_framework.routers import DefaultRouter
+from chats.views import ConversationViewSet, MessageViewSet
+
+router = DefaultRouter()
+router.register(r'conversations', ConversationViewSet, basename='conversation')
+router.register(r'messages', MessageViewSet, basename='message')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    # JWT endpoints
-    path('api/token/', token_obtain_pair, name='token_obtain_pair'),
-    path('api/token/refresh/', token_refresh, name='token_refresh'),
-
-    # Include chats app URLs
-    path('api/chats/', include('messaging_app.chats.urls')),
+    path('api/', include(router.urls)),
 ]
+
 
 
