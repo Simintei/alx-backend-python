@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status, filters, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.status import HTTP_403_FORBIDDEN 
 from django.shortcuts import get_object_or_404
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
@@ -57,68 +58,26 @@ class MessageViewSet(viewsets.ModelViewSet):
 
 
 # Messages
-class UserMessagesView(generics.ListCreateAPIView):
-    serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Message.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-class UserMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
-
-    def get_queryset(self):
-        return Message.objects.all()
-
-# Conversations
-class UserConversationsView(generics.ListCreateAPIView):
-    serializer_class = ConversationSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Conversation.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-class UserConversationDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = ConversationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
-
-    def get_queryset(self):
-        return Conversation.objects.all()
-
-class ConversationViewSet(viewsets.ModelViewSet):
-    queryset = Conversation.objects.all()
-    serializer_class = ConversationSerializer
-    permission_classes = [IsParticipantOfConversation]
-
-    def get_queryset(self):
-        # Only conversations where the user is a participant
-        return Conversation.objects.filter(participants=self.request.user)
-
-    def perform_create(self, serializer):
-        # When creating a conversation, automatically add the creator as participant
-        conversation = serializer.save()
-        conversation.participants.add(self.request.user)
+from rest_framework import viewsets
+from rest_framework.status import HTTP_403_FORBIDDEN  
+from rest_framework.response import Response
+from .models import Message, Conversation
+from .serializers import MessageSerializer, ConversationSerializer
+from .permissions import IsParticipantOfConversation
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsParticipantOfConversation]
 
-    def get_queryset(self):
-        # Only messages in conversations where the user is a participant
-        return Message.objects.filter(
-            conversation__participants=self.request.user
-        )
-
     def perform_create(self, serializer):
-        # Automatically set the sender to the logged-in user
+        conversation = serializer.validated_data.get('conversation')
+        # explicitly check participant before saving
+        if self.request.user not in conversation.participants.all():
+            return Response(
+                {"detail": "You do not have permission to perform this action."},
+                status=HTTP_403_FORBIDDEN
+            )
         serializer.save(sender=self.request.user)
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -126,7 +85,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
     permission_classes = [IsParticipantOfConversation]
 
-class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
-    permission_classes = [IsParticipantOfConversation]
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user not in instance.participants.all():
+            return Response(
+                {"detail": "You do not have permission to perform this action."},
+                status=HTTP_403_FORBIDDEN  
+            )
+        return super().destroy(request, *args, **kwargs)
