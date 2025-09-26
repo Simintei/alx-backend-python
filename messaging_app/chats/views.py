@@ -8,10 +8,8 @@ from .models import Message, Conversation
 from .serializers import MessageSerializer, ConversationSerializer
 from .permissions import IsParticipantOfConversation
 from .filters import MessageFilter  #  custom filter
+from .pagination import MessagePagination
 
-# Pagination class for messages
-class MessagePagination(PageNumberPagination):
-    page_size = 20  #  20 messages per page
 
 class MessageViewSet(viewsets.ModelViewSet):
     """
