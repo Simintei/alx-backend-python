@@ -9,25 +9,39 @@ class IsOwner(permissions.BasePermission):
         return obj.user == request.user
 
 
+
 class IsParticipantOfConversation(permissions.BasePermission):
     """
     Custom permission:
     - Only authenticated users can access
-    - Only participants in the conversation can view/send/update/delete messages
+    - Only participants in a conversation can send/view/update/delete messages
     """
 
-    def has_permission(self, request, view):
-        # User must be authenticated at all
-        return request.user and request.user.is_authenticated
-
     def has_object_permission(self, request, view, obj):
-        """
-        We assume:
-        - Message objects have a foreign key `conversation`
-        - Conversation model has a ManyToManyField `participants`
-        """
-        # If obj is a message, get its conversation
-        conversation = getattr(obj, 'conversation', obj)
+        # Must be authenticated
+        if not request.user or not request.user.is_authenticated:
+            return False
 
-        # Check if user is in the conversation's participants
-        return conversation.participants.filter(id=request.user.id).exists()
+        # Determine conversation from object
+        conversation = None
+        if hasattr(obj, 'conversation'):  # obj is a Message
+            conversation = obj.conversation
+        elif hasattr(obj, 'participants'):  # obj is a Conversation
+            conversation = obj
+        else:
+            return False
+
+        # ✅ Allow GET, HEAD, OPTIONS only to participants
+        if request.method in permissions.SAFE_METHODS:  # GET, HEAD, OPTIONS
+            return request.user in conversation.participants.all()
+
+        # ✅ Explicitly handle unsafe methods PUT, PATCH, DELETE
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            return request.user in conversation.participants.all()
+
+        # ✅ Handle POST (send/create messages)
+        if request.method == 'POST':
+            return request.user in conversation.participants.all()
+
+        return False
+
