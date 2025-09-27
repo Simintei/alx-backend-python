@@ -1,8 +1,15 @@
-
 # Django-Middleware-0x03/middleware.py
 import logging
 from datetime import datetime
 from django.http import HttpResponseForbidden
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
+# Define the paths that should only be accessible by Admin or Host roles
+RESTRICTED_PATHS = [
+    '/admin/',          # Standard Django Admin
+    '/api/conversations/admin_view/', # Example Admin-only API endpoint
+]
 
 
 class RequestLoggingMiddleware:
@@ -106,3 +113,43 @@ class OffensiveLanguageMiddleware:
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+
+class RolePermissionMiddleware:
+    """
+    Middleware that checks if an authenticated user attempting to access 
+    a restricted path has the 'admin' or 'host' role.
+    """
+    def __init__(self, get_response):
+        """
+        Standard middleware constructor. Stores the callable that will 
+        be called next in the chain.
+        """
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """
+        Processes the request and returns the response.
+        """
+        
+        # Check if the requested path starts with any restricted path prefix
+        is_restricted = False
+        for path in RESTRICTED_PATHS:
+            if request.path.startswith(path):
+                is_restricted = True
+                break
+
+        if is_restricted:
+            # 1. Check if the user is logged in
+            if not request.user.is_authenticated:
+                return HttpResponseForbidden("Authentication required to access this resource.")
+
+            # 2. Check the user's role (assuming your custom User model has a 'role' field)
+            # We allow 'admin' and 'host' roles access
+            allowed_roles = ['admin', 'host']
+            if request.user.role not in allowed_roles:
+                return HttpResponseForbidden(f"Permission denied. Required role: {', '.join(allowed_roles)}.")
+
+        # If the path is not restricted or the user is authorized, proceed to the next middleware or view
+        response = self.get_response(request)
+        return response
