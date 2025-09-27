@@ -1,5 +1,5 @@
 
-# messaging_app/middleware.py
+# Django-Middleware-0x03/middleware.py
 import logging
 from datetime import datetime
 
