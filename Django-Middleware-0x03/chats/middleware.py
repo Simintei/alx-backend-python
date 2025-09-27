@@ -64,3 +64,45 @@ class RestrictAccessByTimeMiddleware:
         # Otherwise proceed normally
         response = self.get_response(request)
         return response
+
+
+class OffensiveLanguageMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # {ip: [timestamps]}
+        self.message_log = {}
+
+    def __call__(self, request):
+        # Only apply to POST requests (sending messages)
+        if request.method == 'POST':
+            ip = self.get_client_ip(request)
+            now = time.time()
+
+            # Initialize list for IP if not exists
+            if ip not in self.message_log:
+                self.message_log[ip] = []
+
+            # Keep only timestamps within the last 60 seconds
+            self.message_log[ip] = [
+                t for t in self.message_log[ip] if now - t < 60
+            ]
+
+            # Check the limit
+            if len(self.message_log[ip]) >= 5:  # > 5 per minute
+                return HttpResponseForbidden(
+                    "You have exceeded the message limit. Please wait a minute before sending more."
+                )
+
+            # Add current request timestamp
+            self.message_log[ip].append(now)
+
+        return self.get_response(request)
+
+    def get_client_ip(self, request):
+        """Get client IP address even behind a proxy"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
