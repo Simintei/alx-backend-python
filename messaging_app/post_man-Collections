@@ -1,0 +1,73 @@
+-->Test Creating a Conversation
+Request
+Method: POST
+URL: http://localhost:8000/api/conversations/
+Headers:
+Authorization: Bearer <your_JWT_token>
+Content-Type: application/json
+Body (JSON):
+{
+  "title": "Project Discussion",
+  "participants": [2, 3] 
+}
+
+Response
+Status: 201 Created
+Body:
+{
+  "id": 1,
+  "title": "Project Discussion",
+  "participants": [
+    {"id": 1, "username": "admin"},
+    {"id": 2, "username": "user2"},
+    {"id": 3, "username": "user3"}
+  ],
+  "created_at": "2025-09-28T19:00:00Z"
+}
+
+
+-->Test Sending a Message
+Request
+Method: POST
+URL: http://localhost:8000/api/conversations/1/messages/
+Headers:
+Authorization: Bearer <your_JWT_token>
+Content-Type: application/json
+Body (JSON):
+{
+  "content": "Hey team, let’s discuss the project here."
+}
+
+Response
+Status: 201 Created
+Body:
+{
+  "id": 15,
+  "conversation": 1,
+  "sender": {"id": 1, "username": "admin"},
+  "content": "Hey team, let’s discuss the project here.",
+  "timestamp": "2025-09-28T19:10:00Z"
+}
+
+
+-->Test Fetching Conversations
+Request
+Method: GET
+URL: http://localhost:8000/api/conversations/
+Headers:
+Authorization: Bearer <your_JWT_token>
+
+Response
+Status: 200 OK
+Body:
+[
+  {
+    "id": 1,
+    "title": "Project Discussion",
+    "last_message": "Hey team, let’s discuss the project here.",
+    "participants": [
+      {"id": 1, "username": "admin"},
+      {"id": 2, "username": "user2"}
+    ]
+  }
+]
