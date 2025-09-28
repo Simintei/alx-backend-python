@@ -115,40 +115,29 @@ class OffensiveLanguageMiddleware:
         return ip
 
 
-class RolePermissionMiddleware:
-    """
-    Middleware that checks if an authenticated user attempting to access 
-    a restricted path has the 'admin' or 'host' role.
-    """
+class RolepermissionMiddleware:
     def __init__(self, get_response):
-        """
-        Standard middleware constructor. Stores the callable that will 
-        be called next in the chain.
-        """
         self.get_response = get_response
 
     def __call__(self, request):
         """
-        Processes the request and returns the response.
+        This middleware checks the user's role before granting access.
         """
-        
-        # Check if the requested path starts with any restricted path prefix
-        is_restricted = False
-        for path in RESTRICTED_PATHS:
-            if request.path.startswith(path):
-                is_restricted = True
-                break
 
-        if is_restricted:
-            # 1. Check if the user is logged in
-            if not request.user.is_authenticated:
-                return HttpResponseForbidden("Authentication required to access this resource.")
+        # Only run check for authenticated users
+        if request.user.is_authenticated:
+            # Assuming your User model has a 'role' field
+            user_role = getattr(request.user, 'role', None)
 
-            # 2. Check the user's role (assuming your custom User model has a 'role' field)
-            # We allow 'admin' and 'host' roles access
-            allowed_roles = ['admin', 'host']
-            if request.user.role not in allowed_roles:
-                return HttpResponseForbidden(f"Permission denied. Required role: {', '.join(allowed_roles)}.")
+            # Allow only admins or moderators
+            if user_role not in ['admin', 'moderator']:
+                return HttpResponseForbidden(
+                    "You do not have permission to perform this action."
+                )
+
+        # Continue processing
+        response = self.get_response(request)
+        return response
 
         # If the path is not restricted or the user is authorized, proceed to the next middleware or view
         response = self.get_response(request)
