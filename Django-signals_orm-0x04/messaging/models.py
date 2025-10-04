@@ -1,6 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+class UnreadMessagesManager(models.Manager):
+    """Custom manager to filter unread messages for a given user."""
+    def unread_for_user(self, user):
+        return (
+            self.filter(receiver=user, read=False)
+            .select_related("sender", "receiver")
+            .only("id", "sender__username", "receiver__username", "content", "timestamp")
+        )
+
+
 class Message(models.Model):
     sender = models.ForeignKey(
         User, related_name="sent_messages", on_delete=models.CASCADE
@@ -18,13 +29,18 @@ class Message(models.Model):
         null=True,
         blank=True
     )
-    parent_message = models.ForeignKey(  # ✅ self-referential FK for threaded replies
+    parent_message = models.ForeignKey(  # ✅ threaded replies
         "self",
         null=True,
         blank=True,
         related_name="replies",
         on_delete=models.CASCADE
     )
+    read = models.BooleanField(default=False)  # ✅ track if message is read
+
+    # Managers
+    objects = models.Manager()  # default
+    unread = UnreadMessagesManager()  # ✅ custom unread manager
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver} - {self.content[:20]}"
