@@ -18,9 +18,29 @@ class Message(models.Model):
         null=True,
         blank=True
     )
+    parent_message = models.ForeignKey(  # ✅ self-referential FK for threaded replies
+        "self",
+        null=True,
+        blank=True,
+        related_name="replies",
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver} - {self.content[:20]}"
+
+    def get_all_replies(self):
+        """
+        Recursive function to fetch all nested replies in threaded format.
+        """
+        replies = []
+        for reply in self.replies.all().select_related("sender", "receiver").prefetch_related("replies"):
+            replies.append({
+                "message": reply,
+                "replies": reply.get_all_replies()
+            })
+        return replies
+
 
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, related_name="history", on_delete=models.CASCADE)
@@ -36,6 +56,7 @@ class MessageHistory(models.Model):
 
     def __str__(self):
         return f"History of message {self.message.id} at {self.edited_at}"
+
 
 class Notification(models.Model):
     user = models.ForeignKey(User, related_name="notifications", on_delete=models.CASCADE)
