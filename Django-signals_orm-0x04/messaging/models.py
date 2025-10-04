@@ -1,15 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-
-class UnreadMessagesManager(models.Manager):
-    """Custom manager to filter unread messages for a given user."""
-    def unread_for_user(self, user):
-        return (
-            self.filter(receiver=user, read=False)
-            .select_related("sender", "receiver")
-            .only("id", "sender__username", "receiver__username", "content", "timestamp")
-        )
+from .managers import UnreadMessagesManager
 
 
 class Message(models.Model):
@@ -29,27 +20,30 @@ class Message(models.Model):
         null=True,
         blank=True
     )
-    parent_message = models.ForeignKey(  # ✅ threaded replies
+    parent_message = models.ForeignKey(
         "self",
         null=True,
         blank=True,
         related_name="replies",
         on_delete=models.CASCADE
     )
-    read = models.BooleanField(default=False)  # ✅ track if message is read
+    read = models.BooleanField(default=False)
 
     # Managers
-    objects = models.Manager()  # default
-    unread = UnreadMessagesManager()  # ✅ custom unread manager
+    objects = models.Manager()            # default manager
+    unread = UnreadMessagesManager()      # custom manager for unread messages
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver} - {self.content[:20]}"
 
     def get_all_replies(self):
         """
-        Recursive function to fetch all nested replies in threaded format.
+        Recursively fetch nested replies in a threaded format.
+        Note: this builds an in-memory nested structure. For large threads you may want
+        to use iterative approaches or annotate depths with a database recursive query.
         """
         replies = []
+        # Prefetch sender/receiver for each reply to avoid extra queries when rendering
         for reply in self.replies.all().select_related("sender", "receiver").prefetch_related("replies"):
             replies.append({
                 "message": reply,
