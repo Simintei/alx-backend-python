@@ -1,12 +1,33 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.models import User
+from .models import Message
 
 @login_required
 def delete_user(request):
     user = request.user
-    logout(request)  # Log out before deletion
-    user.delete()    # This triggers post_delete signal
-    return redirect("home")  # Redirect to homepage or goodbye page
+    logout(request)
+    user.delete()  # triggers post_delete signal
+    return redirect("home")
 
+@login_required
+def view_conversation(request, user_id):
+    """
+    View conversation between the logged-in user and another user.
+    Uses select_related + prefetch_related for efficiency.
+    """
+    other_user = get_object_or_404(User, pk=user_id)
+
+    messages = (
+        Message.objects.filter(
+            sender__in=[request.user, other_user],
+            receiver__in=[request.user, other_user],
+            parent_message__isnull=True  # Only top-level messages
+        )
+        .select_related("sender", "receiver")
+        .prefetch_related("replies__sender", "replies__receiver")
+        .order_by("timestamp")
+    )
+
+    return render(request, "messaging/conversation.html", {"messages": messages, "other_user": other_user})
