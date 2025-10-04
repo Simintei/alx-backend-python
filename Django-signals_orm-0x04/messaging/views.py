@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.models import User
+from django.views.decorators.cache import cache_page   # ✅ import cache_page
 from .models import Message
 
 
@@ -14,10 +15,11 @@ def delete_user(request):
 
 
 @login_required
+@cache_page(60)   # ✅ cache for 60 seconds
 def view_conversation(request, user_id):
     """
     View conversation between the logged-in user and another user.
-    Uses select_related + prefetch_related for efficiency.
+    Cached for 60 seconds to reduce repeated DB queries.
     """
     other_user = get_object_or_404(User, pk=user_id)
 
