@@ -21,13 +21,16 @@ def view_conversation(request, user_id):
 
     messages = (
         Message.objects.filter(
-            sender__in=[request.user, other_user],
-            receiver__in=[request.user, other_user],
-            parent_message__isnull=True  # Only top-level messages
+            sender=request.user, receiver=other_user
         )
-        .select_related("sender", "receiver")
-        .prefetch_related("replies__sender", "replies__receiver")
-        .order_by("timestamp")
-    )
+        | Message.objects.filter(
+            sender=other_user, receiver=request.user
+        )
+    ).select_related("sender", "receiver") \
+     .prefetch_related("replies__sender", "replies__receiver") \
+     .order_by("timestamp")
 
-    return render(request, "messaging/conversation.html", {"messages": messages, "other_user": other_user})
+    return render(request, "messaging/conversation.html", {
+        "messages": messages,
+        "other_user": other_user
+    })
