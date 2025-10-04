@@ -6,7 +6,7 @@ from messaging.models import Message
 
 
 @login_required
-@cache_page(60)   # ✅ Cache this view for 60 seconds
+@cache_page(60)   # Cache this view for 60 seconds
 def view_conversation(request, user_id):
     """
     View conversation between the logged-in user and another user.
