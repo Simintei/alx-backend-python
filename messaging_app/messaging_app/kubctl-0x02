@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Deploy blue version
+echo "Deploying BLUE version..."
+kubectl apply -f blue_deployment.yaml
+
+# Deploy green version
+echo "Deploying GREEN version..."
+kubectl apply -f green_deployment.yaml
+
+# Apply service (initially pointing to blue)
+echo "Applying service..."
+kubectl apply -f kubeservice.yaml
+
+# Wait for pods to start
+echo "Waiting for pods to initialize..."
+sleep 10
+
+# Check pods
+kubectl get pods -l app=django-app
+
+# Check logs for both deployments
+echo "Checking BLUE deployment logs..."
+kubectl logs -l app=django-app,version=blue --tail=10
+
+echo "Checking GREEN deployment logs..."
+kubectl logs -l app=django-app,version=green --tail=10
+
+echo "✅ Blue-Green deployments applied successfully!"
