@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Script: kubctl-0x01
+# Purpose: Scale Django Kubernetes app and perform load testing
+# Author: Your Name
+
+DEPLOYMENT_NAME="django-messaging-deployment"
+SERVICE_NAME="django-messaging-service"
+NAMESPACE="default"
+
+echo "📦 Scaling the Django app to 3 replicas..."
+kubectl scale deployment $DEPLOYMENT_NAME --replicas=3
+
+echo "⏳ Waiting for pods to scale up..."
+sleep 10
+
+echo " Verifying running pods..."
+kubectl get pods -l app=django-messaging -o wide
+
+echo " Getting ClusterIP service details..."
+kubectl get svc $SERVICE_NAME
+
+# Optional: port-forward to access locally
+echo " Forwarding service to localhost:8000..."
+kubectl port-forward service/$SERVICE_NAME 8000:8000 &
+PF_PID=$!
+sleep 5
+
+echo " Performing load test with wrk (10 seconds)..."
+wrk -t4 -c50 -d10s http://localhost:8000/
+
+echo " Monitoring resource usage..."
+kubectl top pods
+
+# Stop port forwarding
+kill $PF_PID
+
+echo " Done. Scaling and load test complete!"
