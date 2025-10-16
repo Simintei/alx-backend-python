@@ -5,4 +5,20 @@ metadata:
   labels:
     app: django
     version: green
-spec
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django
+      version: green
+  template:
+    metadata:
+      labels:
+        app: django
+        version: green
+    spec:
+      containers:
+        - name: django
+          image: your-django-image:green
+          ports:
+            - containerPort: 8000
