@@ -11,6 +11,11 @@ spec:
     matchLabels:
       app: django
       version: blue
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1         # Allow one extra pod during update
+      maxUnavailable: 0   # Ensure no pod is unavailable
   template:
     metadata:
       labels:
@@ -19,6 +24,6 @@ spec:
     spec:
       containers:
         - name: django
-          image: your-django-image:blue
+          image: your-django-image:2.0   # <— Updated version
           ports:
             - containerPort: 8000
