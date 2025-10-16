@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
         - name: django
-          image: your-django-image:blue   # replace with your actual Docker image tag
+          image: your-django-image:blue
           ports:
             - containerPort: 8000
