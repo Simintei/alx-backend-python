@@ -1,0 +1,26 @@
+#!/bin/bash
+# kubctl-0x03
+# Perform zero-downtime rolling update
+
+DEPLOYMENT="django-blue"
+SERVICE="django-service"
+NAMESPACE="default"
+
+echo "🚀 Applying updated deployment..."
+kubectl apply -f blue_deployment.yaml
+
+echo "⏳ Monitoring rolling update progress..."
+kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE
+
+# Get the service ClusterIP and port
+SERVICE_IP=$(kubectl get svc $SERVICE -o jsonpath='{.spec.clusterIP}')
+SERVICE_PORT=$(kubectl get svc $SERVICE -o jsonpath='{.spec.ports[0].port}')
+
+echo "🌐 Testing app availability during rollout..."
+for i in {1..20}; do
+  curl -s -o /dev/null -w "%{http_code}\n" http://$SERVICE_IP:$SERVICE_PORT
+  sleep 1
+done
+
+echo "✅ Rolling update complete. Checking current pods..."
+kubectl get pods -l app=django -n $NAMESPACE
