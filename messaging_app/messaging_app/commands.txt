@@ -1,1 +1,11 @@
+# Enable ingress controller (for Minikube)
+minikube addons enable ingress
+
+# Apply ingress configuration
 kubectl apply -f ingress.yaml
+
+# Check ingress status
+kubectl get ingress
+
+# Optional: test connectivity
+curl http://django.local
