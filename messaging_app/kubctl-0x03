@@ -1,26 +1,30 @@
-#!/bin/bash
-# kubctl-0x03
-# Perform zero-downtime rolling update
+#!/bin/bash
+# Rolling update script for Django app with zero downtime
 
-DEPLOYMENT="django-blue"
-SERVICE="django-service"
-NAMESPACE="default"
+set -e
 
-echo "🚀 Applying updated deployment..."
+echo "🚀 Starting rolling update for Django app..."
+
+# Apply updated deployment (new image version)
 kubectl apply -f blue_deployment.yaml
 
-echo "⏳ Monitoring rolling update progress..."
-kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE
+# Monitor rollout status
+echo "⏳ Monitoring rollout status..."
+kubectl rollout status deployment/django-blue
 
-# Get the service ClusterIP and port
-SERVICE_IP=$(kubectl get svc $SERVICE -o jsonpath='{.spec.clusterIP}')
-SERVICE_PORT=$(kubectl get svc $SERVICE -o jsonpath='{.spec.ports[0].port}')
-
+# Continuous curl test to check for downtime
 echo "🌐 Testing app availability during rollout..."
+SERVICE_IP=$(minikube service django-service --url | head -n 1)
+
+echo "Sending 20 requests to check for disruption..."
 for i in {1..20}; do
-  curl -s -o /dev/null -w "%{http_code}\n" http://$SERVICE_IP:$SERVICE_PORT
+  curl -s -o /dev/null -w "%{http_code} " $SERVICE_IP || echo "❌ Request failed"
   sleep 1
 done
 
-echo "✅ Rolling update complete. Checking current pods..."
-kubectl get pods -l app=django -n $NAMESPACE
+echo
+echo "✅ Rollout completed successfully."
+
+# Verify pods after rollout
+echo "🔍 Verifying running pods..."
+kubectl get pods -l app=django
