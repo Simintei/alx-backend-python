@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     app: django
-    version: blue   # switch to "green" to shift traffic
+    version: blue  # initially routes to blue deployment
   ports:
     - protocol: TCP
       port: 80
