@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    environment {
+
+        GITHUB_CREDENTIALS = credentials('ghp_7J89CFgYUiNSHHwoOhj')
+        PYTHON_ENV = 'venv'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                echo 'Cloning repository'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']], //or the master branch
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Bashu-011/alx-backend-python.git',
+                        credentialsId: 'github-credentials'
+                    ]]
+                ])
+            }
+        }
+
+        stage('Set up python environment') {
+            steps {
+                echo 'Setting up python venv'
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r messaging_app/requirements.txt
+                '''
+            }
+        }
+        
+        //run the available tests
+        stage('Run Tests') {
+            steps {
+                echo 'Running pytest'
+                sh '''
+                . venv/bin/activate
+                pytest messaging_app/tests/ --junitxml=reports/test-results.xml
+                '''
+            }
+            //log the results in a file
+            post {
+                always {
+                    junit 'reports/test-results.xml'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Tests passed successfully'
+        }
+        failure {
+            echo 'Tests failed'
+        }
+    }
+}
