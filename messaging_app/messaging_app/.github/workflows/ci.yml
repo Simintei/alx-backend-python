@@ -1,0 +1,82 @@
+name: Django Messaging app CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root                   
+          MYSQL_DATABASE: messaging_db
+          MYSQL_USER: localhost
+          MYSQL_PASSWORD: yosemite
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    env:
+      DB_NAME: test_db
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DJANGO_SETTINGS_MODULE: messaging_app.settings
+      PYTHONUNBUFFERED: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/
+
+      - name: set up python
+        uses: actions/
+        with:
+          python-version: '3.10'
+
+      - name: dependency installation
+        run: |
+          python3 -m pip3 install --upgrade pip
+          pip3 install -r messaging_app/requirements.txt
+          pip3 install pytest pytest-django mysqlclient
+
+      - name: Initialize MYSQL
+        run: |
+          for i in {1..15}; do
+            if mysqladmin ping -h 127.0.0.1 -ptest_password --silent; then
+              echo "MySQL initialized"
+              break
+            fi
+            echo "Initializing MYSQL"
+            sleep 5
+          done
+
+      - name: Run Flake8 Linting
+        run: |
+          echo "Running flake8 lint checks..."
+          # Fail build if any lint errors occur
+          flake8 messaging_app --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 messaging_app --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+      - name: Run Flake8 Linting
+        run: |
+          echo "Flake8 lint checks"
+          # Build fails if any errors occur
+          flake8 messaging_app --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 messaging_app --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+
+      - name: Run Django tests
+        run: |
+          python manage.py migrate --noinput
+          pytest messaging_app/tests/ --ds=messaging_app.settings --maxfail=1 --disable-warnings -q
