@@ -1,56 +1,28 @@
+# render.yaml
+
 services:
-  # Django Web App
   - type: web
-    name: myapp-web
+    name: messaging-app-web
     env: python
+    branch: main
     plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn project.wsgi:application"
+    buildCommand: cd messaging_app && pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: cd messaging_app && gunicorn messaging_app.wsgi:application
+    autoDeploy: true
     envVars:
       - key: DJANGO_SETTINGS_MODULE
-        value: project.settings
-      - key: DEBUG
-        value: false
+        value: messaging_app.settings
       - key: SECRET_KEY
-        generateValue: true
-      - key: ALLOWED_HOSTS
-        value: myapp.onrender.com
+        value: "<your-django-secret-key>"
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        value: "<your-database-url>"
       - key: CELERY_BROKER_URL
-        value: redis://red-redis-service:6379/0
-      - key: CELERY_RESULT_BACKEND
-        value: redis://red-redis-service:6379/0
+        value: redis://:@messaging-app-redis:6379/0
 
-  # Celery Worker
   - type: worker
-    name: myapp-celery
+    name: messaging-app-celery
     env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "celery -A project worker -l info"
-    envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: project.settings
-      - key: CELERY_BROKER_URL
-        value: redis://red-redis-service:6379/0
-      - key: CELERY_RESULT_BACKEND
-        value: redis://red-redis-service:6379/0
-
-  # Celery Beat Scheduler
-  - type: worker
-    name: myapp-celery-beat
-    env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "celery -A project beat -l info"
-    envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: project.settings
-      - key: CELERY_BROKER_URL
-        value: redis://red-redis-service:6379/0
-      - key: CELERY_RESULT_BACKEND
-        value: redis://red-redis-service:6379/0
-
-  # Redis service
-  - type: redis
-    name: red-redis-service
-    plan: free
+    branch: main
+    plan:
