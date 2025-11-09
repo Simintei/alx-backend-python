@@ -105,8 +105,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('MYSQL_DATABASE'),
-        'USER': os.getenv('MYSQL_USER'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+        'USER': os.getenv('MaryK'),
+        'PASSWORD': os.getenv('Gotha125#'),
         'HOST': os.getenv('DB_HOST', 'db'),  # 'db' is the name of the service in docker-compose
         'PORT': os.getenv('DB_PORT', '3306'),
     }
