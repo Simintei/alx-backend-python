@@ -104,10 +104,10 @@ WSGI_APPLICATION = 'messaging_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_DATABASE'),
-        'USER': os.getenv('MaryK'),
+        'NAME': os.getenv('MaryKaranja$default'),
+        'USER': os.getenv('MaryKaranja'),
         'PASSWORD': os.getenv('Gotha125#'),
-        'HOST': os.getenv('DB_HOST', 'db'),  # 'db' is the name of the service in docker-compose
+        'HOST': os.getenv('MaryKaranja.mysql.pythonanywhere-services.com'),  # 'db' is the name of the service in docker-compose
         'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
