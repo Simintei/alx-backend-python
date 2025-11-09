@@ -1,0 +1,56 @@
+services:
+  # Django Web App
+  - type: web
+    name: myapp-web
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn project.wsgi:application"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: project.settings
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: myapp.onrender.com
+      - key: CELERY_BROKER_URL
+        value: redis://red-redis-service:6379/0
+      - key: CELERY_RESULT_BACKEND
+        value: redis://red-redis-service:6379/0
+
+  # Celery Worker
+  - type: worker
+    name: myapp-celery
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "celery -A project worker -l info"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: project.settings
+      - key: CELERY_BROKER_URL
+        value: redis://red-redis-service:6379/0
+      - key: CELERY_RESULT_BACKEND
+        value: redis://red-redis-service:6379/0
+
+  # Celery Beat Scheduler
+  - type: worker
+    name: myapp-celery-beat
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "celery -A project beat -l info"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: project.settings
+      - key: CELERY_BROKER_URL
+        value: redis://red-redis-service:6379/0
+      - key: CELERY_RESULT_BACKEND
+        value: redis://red-redis-service:6379/0
+
+  # Redis service
+  - type: redis
+    name: red-redis-service
+    plan: free
