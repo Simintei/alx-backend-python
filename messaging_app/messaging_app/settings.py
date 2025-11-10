@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,14 +119,10 @@ WSGI_APPLICATION = 'messaging_app.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'MaryKaranja$default',   # your actual database name
-        'USER': 'MaryKaranja',           # your MySQL username
-        'PASSWORD': 'Gotha125#',         # your MySQL password
-        'HOST': 'MaryKaranja.mysql.pythonanywhere-services.com',  # correct MySQL host on PythonAnywhere
-        'PORT': '3306',
-    }
+    'default': { dj_database_url.config(
+        default='postgresql://postgres:postgres@localhost:5432/mysite',
+        conn_max_age=600
+    )
 }
 
 
